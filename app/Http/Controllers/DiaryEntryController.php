@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\DiaryEntry;
 use App\Models\Emotion;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class DiaryEntryController extends Controller
 {
@@ -14,8 +15,47 @@ class DiaryEntryController extends Controller
      */
     public function index()
     {
-        $diaryEntries = Auth::user()->diaryEntries()->get();
-        return view('diary.index', compact('diaryEntries'));
+        // Get the paginated diary entries with their associated emotions
+        $diaryEntries = Auth::user()->diaryEntries()->with('emotions')->paginate(5);
+        // Get the logged-in user ID
+        $userId = Auth::id();
+        // Count how many diaries are related to each emotion
+        $emotionCounts = DB::table('diary_entry_emotions as dee')
+        ->join('diary_entries as de', 'dee.diary_entry_id', '=', 'de.id')
+        ->select('dee.emotion_id', DB::raw('count(dee.diary_entry_id) as diary_count'))
+        ->where('de.user_id', $userId)
+        ->whereIn('dee.emotion_id', [1, 2, 3, 4, 5])
+        ->groupBy('dee.emotion_id')
+        ->get();
+        // Convert the data into a format suitable for display
+        $summary = [];
+        foreach ($emotionCounts as $count) {
+        $summary[$count->emotion_id] = $count->diary_count;
+        }
+        // Return the view with both diary entries and summary data
+        return view('diary.index', compact('diaryEntries', 'summary'));
+    }
+
+    public function count_happy_diary()
+    {
+        $userId = Auth::id();
+        $happyEmotionCount = DB::table('users as u')
+        ->join('diary_entries as de', 'u.id', '=', 'de.user_id')
+        ->join('diary_entry_emotions as dee', 'de.id', '=', 'dee.diary_entry_id')
+        ->where('u.id', $userId)
+        ->where('dee.emotion_id', 1)
+        ->count('de.id');
+        return response()->json(['happyEmotionCount' => $happyEmotionCount]);
+    }
+
+    public function display_diary()
+    {
+        $userId = Auth::id(); // Get the authenticated user's ID
+        // Fetch all diary entries for the authenticated user
+        $diaryEntries = DB::table('diary_entries')
+        ->where('user_id', $userId)
+        ->get();
+        return view('diary.display_diary', compact('diaryEntries'));
     }
 
     /**

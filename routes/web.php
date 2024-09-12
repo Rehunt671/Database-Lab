@@ -20,8 +20,9 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     Route::get('/profile/bio', [UserController::class, 'showBio'])->name('profile.show-bio');
      // Route to handle updating the bio
-     Route::patch('/profile/bio', [UserController::class, 'updateBio'])->name('profile.update-bio');
-     Route::resource('diary', DiaryEntryController::class); //add this
+    Route::patch('/profile/bio', [UserController::class, 'updateBio'])->name('profile.update-bio');
+    Route::resource('diary', DiaryEntryController::class); //add this
+    Route::get('/display_diary', [DiaryEntryController::class, 'display_diary'])->name('diary.display_diary');
 });
 
 require __DIR__.'/auth.php';
