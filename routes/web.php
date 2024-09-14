@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\DiaryEntryController;
+use App\Http\Controllers\ConflictController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
@@ -23,6 +24,7 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile/bio', [UserController::class, 'updateBio'])->name('profile.update-bio');
     Route::resource('diary', DiaryEntryController::class); //add this
     Route::get('/display_diary', [DiaryEntryController::class, 'display_diary'])->name('diary.display_diary');
+    Route::resource('/conflict', ConflictController::class); //add this
 });
 
 require __DIR__.'/auth.php';
